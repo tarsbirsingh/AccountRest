@@ -1,0 +1,33 @@
+@isTest
+private class AccountWrapRestTest {
+    @testSetup private static void setData(){
+        Account acc = new Account();
+        acc.Name = 'Ali';
+        acc.Phone = '9876543210';
+        insert acc;
+    }
+    static testMethod void testGet(){
+        Account accNew = [Select id,Name from Account];
+        String Name = accNew.Name;
+        //System.debug('Acc NAme'+AccName);
+        RestRequest request = new RestRequest();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/AccountRecord/'+ Name;
+        request.httpMethod = 'GET';
+        RestContext.request = request;
+        List<AccountWrapper> accWrapGet = getAccWrap();
+        Test.startTest();
+        List<AccountWrapper> accListWrap = AccountWrapRest.doget();
+        Test.stopTest();
+        System.assertEquals(1,accWrapGet.size());
+    }
+    static List<AccountWrapper> getAccWrap(){
+        List<AccountWrapper> accWrapList = new List<AccountWrapper>(); 
+        Account account = [Select id,Name,Phone from Account];
+         AccountWrapper accWrap = new AccountWrapper();
+         accWrap.accId = account.Id;
+         accWrap.Name = account.Name;
+         accWrap.Phone = account.Phone;
+         accWrapList.add(accWrap);
+        return accWrapList;
+    }
+}
