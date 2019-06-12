@@ -1,0 +1,50 @@
+@isTest
+private class AccountShowTest {
+   
+    
+    @isTest static void testGet() {
+        Account acc = createTestData();
+        String Name = acc.Name;
+        RestRequest request = new RestRequest();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/AccountRecord/'+ Name;
+        request.httpMethod = 'GET';
+        RestContext.request = request;
+        Test.startTest();
+        AccountShow.getAccount();
+        Test.stopTest();
+}
+    
+    @isTest static void testPost(){
+        Test.startTest();
+        AccountShow.postAccount('AGC','123454343','abc.com');
+        Test.stopTest();
+        Account acc = [SELECT Id FROM Account];
+        System.assert(acc!= null);
+    }
+    
+    @isTest static void testDelete(){
+        Account acc = createTestData();
+        Test.startTest();
+        AccountShow.deleteAccount();
+        Test.stopTest();
+    }
+    @isTest static void testPut(){
+        Test.startTest();
+        AccountShow.putAccount(null,'AGC','98765433','Website');
+        //System.assert(accId!=null);
+        Account accIdNew = [Select id,Name,Phone from Account]; 
+        AccountShow.putAccount(accIdNew.id,'AGC','98765433','Website');//id 
+        Test.stopTest();
+    }
+    
+    
+    
+     static Account createTestData(){
+        Account acc = new Account();
+        acc.Name = 'John';
+        acc.Phone = '9876543210';
+        acc.Description = 'Only for Test';
+        insert acc;
+        return acc;
+    }
+}
