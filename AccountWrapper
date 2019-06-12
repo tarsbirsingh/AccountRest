@@ -1,5 +1,0 @@
-global class AccountWrapper {
-    public Id accId;
-    public String Name;
-    public String Phone;
-}

@@ -1,0 +1,14 @@
+public class AccountShowWrapper {
+	public cls_attributes attributes;
+	public String Id;	//0010o99902KGy2oAAD
+	public String Name;	//AGC
+	public String Phone;	//9878285824
+    public String Website; //tarsbirsingh.com
+    public String Email;   //tarsbirsingh@gmail.com
+    
+	class cls_attributes {
+		public String type;	//Account
+		public String url;	///services/data/v45.0/sobjects/Account/001099999802KGy2oAAD
+	}
+	
+}
