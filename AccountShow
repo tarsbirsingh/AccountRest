@@ -1,0 +1,91 @@
+@RestResource (UrlMapping = '/accounts/*')
+global with Sharing class AccountShow {
+    
+   @HttpGet
+    global static void getAccount(){
+        RestRequest request = RestContext.request;
+        RestResponse res = RestContext.response;
+        String AccName = request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
+        Account accRec;
+        try {
+            accRec = [SELECT Id, Name,Phone,Website,Email__c FROM Account Where Name =:AccName Limit 1];
+            res.responseBody = Blob.valueOf('{"Success":"Succesfully Fetch  Account Record"}'+'\n\n'+JSON.serialize(accRec));
+            res.statusCode = 200;
+        } catch (Exception e) {
+            res.responseBody = Blob.valueOf(e.getMessage());
+            res.statusCode = 404;
+        }
+    }
+
+    @HttpPost
+    global static void postAccount(){
+        RestRequest req = RestContext.request;
+        RestResponse res = RestContext.response;
+        string jsonbody =   req.requestBody.toString();
+        System.debug('Json :'+jsonbody);
+        AccountShowWrapper jsonwrap;
+       
+        try{
+            if(RestContext.request.requestBody!= null){
+                jsonwrap =(AccountShowWrapper)JSON.deserialize(jsonbody,AccountShowWrapper.class);
+                Account acc = new Account();
+                acc.Name = jsonWrap.Name;
+                acc.Email__c = jsonWrap.Email;
+                acc.Phone = jsonWrap.Phone;
+                acc.Website = jsonWrap.Website;
+                insert acc;
+                System.debug('Deserialize :'+jsonwrap);
+                res.responseBody = Blob.valueOf('{"Success":"Succesfully Created Account"}'+'\n\n'+JSON.serialize(acc));
+                res.statusCode = 200;
+            }
+        }catch(Exception e){
+            res.responseBody = Blob.valueOf(e.getMessage());
+            res.statusCode = 400;
+        }
+    } 
+    @HttpDelete
+    global static void deleteAccount(){
+        RestRequest request = RestContext.request;
+        RestResponse res = RestContext.response;
+        String accId= request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
+        Account accRec;
+        try{
+            accRec =[Select id,Name from Account Where Id =:accId Limit 1];
+            delete accRec;
+            res.responseBody = Blob.valueOf('{"Success":"Succesfully Deleted Record of Account"}'+'\n\n'+JSON.serialize(accRec));
+            res.statusCode = 200;
+        } catch (Exception e){
+            res.responseBody = Blob.valueOf('{"error":"Not correct Record Id of Account"}');
+            res.statusCode = 400;
+        }
+        
+    }
+    @HttpPut
+    global static void putAccount(){
+        RestRequest req = RestContext.request;
+        RestResponse res = RestContext.response;
+        string jsonbody =   req.requestBody.toString();
+        System.debug('Json :'+jsonbody);
+        AccountShowWrapper jsonwrap;
+        Account acc;
+         try{
+            if(RestContext.request.requestBody!= null){
+                jsonwrap =(AccountShowWrapper)JSON.deserialize(jsonbody,AccountShowWrapper.class);
+                acc = [Select id,Name,Phone,Website,Email__c from Account Limit 1];
+                acc.Email__c = jsonwrap.Email;
+                acc.Id = jsonWrap.Id;
+                acc.Name = jsonWrap.Name;
+                acc.Phone = jsonWrap.Phone;
+                acc.Website = jsonWrap.Website;
+                upsert acc;
+                System.debug('Deserialize :'+jsonwrap);
+                res.responseBody = Blob.valueOf('{"Success":"Succesfully Created Account"}'+'\n\n'+JSON.serialize(acc));
+                res.statusCode = 200;
+            }
+        } catch (Exception e){
+            res.responseBody = Blob.valueOf(e.getMessage());
+            res.statusCode = 400;
+        }
+        
+    }
+}
