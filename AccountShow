@@ -7,9 +7,18 @@ global with Sharing class AccountShow {
         RestResponse res = RestContext.response;
         String AccName = request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
         Account accRec;
+        List<AccountShowWrapper> accWrapList;
         try {
             accRec = [SELECT Id, Name,Phone,Website,Email__c FROM Account Where Name =:AccName Limit 1];
-            res.responseBody = Blob.valueOf('{"Success":"Succesfully Fetch  Account Record"}'+'\n\n'+JSON.serialize(accRec));
+            accWrapList = new List<AccountShowWrapper>();
+            AccountShowWrapper accWrap = new AccountShowWrapper();
+            accWrap.Id = accRec.Id;
+            accWrap.Name = accRec.Name;
+            accWrap.Phone = accRec.Phone;
+            accWrap.Email = accRec.Email__c;
+            accWrap.Website = accRec.Website;
+            accWrapList.add(accWrap);
+            res.responseBody = Blob.valueOf('{"Success":"Succesfully Fetch  Account Record"}'+'\n\n'+JSON.serialize(accRec)+'\n\n'+accWrapList);
             res.statusCode = 200;
         } catch (Exception e) {
             res.responseBody = Blob.valueOf(e.getMessage());
