@@ -1,50 +1,143 @@
 @isTest
 private class AccountShowTest {
-   
+    
     
     @isTest static void testGet() {
+        //ARRANGE - setup request
         Account acc = createTestData();
         String Name = acc.Name;
         RestRequest request = new RestRequest();
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/AccountRecord/'+ Name;
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/'+ Name;
+        request.addHeader('Content-Type', 'application/json');
         request.httpMethod = 'GET';
+        request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
+        RestContext.response= res;
         Test.startTest();
         AccountShow.getAccount();
         Test.stopTest();
-}
-    
-    @isTest static void testPost(){
-        Test.startTest();
-        AccountShow.postAccount('AGC','123454343','abc.com');
-        Test.stopTest();
-        Account acc = [SELECT Id FROM Account];
-        System.assert(acc!= null);
     }
     
-    @isTest static void testDelete(){
-        Account acc = createTestData();
+    @isTest static void testPost(){  
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.addHeader('Content-Type', 'application/json');
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts';
+        request.httpMethod = 'POST';
+        AccountShowWrapper jsonWrap = new AccountShowWrapper();
+        Account accN = createTestData();
+        jsonWrap.Id = accN.Id;
+        jsonWrap.Name = 'Test';
+        jsonWrap.Email = 'email@gmail.com';
+        jsonWrap.Phone = '987678978';
+        jsonWrap.Website = 'jsonWrapebsite.com';
+        String myJSON = JSON.serialize(jsonWrap);
+        request.requestBody = Blob.valueof(myJSON);
+        String json = request.requestBody.toString();
+        System.assert(accN!= null);
+        System.debug('insert acc'+accN);
+        System.debug('jsonWrap from Test Post'+jsonWrap); 
+        RestContext.request = request;
+        RestContext.response= res;
+        
         Test.startTest();
+        AccountShow.postAccount();
+        Test.stopTest();
+    }
+    //Negtive POst
+    @isTest static void testNegPost(){  
+        //ARRANGE - setup request
+        
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'POST';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        
+        Test.startTest();
+        AccountShow.postAccount();
+        Test.stopTest();
+    }
+    
+    @isTest static void testDelete(){ 
+        //ARRANGE - setup request
+        Account acc = createTestData();
+        String Name = acc.Name;
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/'+ Name;
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'DELETE';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        Test.startTest(); 
         AccountShow.deleteAccount();
         Test.stopTest();
     }
     @isTest static void testPut(){
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'PUT';
+        String JsonMsg='{"Id":"0010o00002KGy2oAAD","Name":"Test Co","Phone":"9878285824","Email":"agc@gmail.com", "Website":"Test.com"}';
+        AccountShowWrapper jsonwrap =(AccountShowWrapper)JSON.deserialize(JsonMsg,AccountShowWrapper.class);
+        Account accN = new Account();
+        accN.Name = jsonWrap.Name;
+        accN.Email__c = jsonWrap.Email;
+        accN.Phone = jsonWrap.Phone;
+        accN.Website = jsonWrap.Website;
+        upsert accN;
+        System.debug('upsert acc'+accN);
+        System.debug('JsonMsg from Test Post'+JsonMsg);
+        request.requestBody = Blob.valueof(JsonMsg);
+        RestContext.request = request;
+        RestContext.response= res;
         Test.startTest();
-        AccountShow.putAccount(null,'AGC','98765433','Website');
-        //System.assert(accId!=null);
-        Account accIdNew = [Select id,Name,Phone from Account]; 
-        AccountShow.putAccount(accIdNew.id,'AGC','98765433','Website');//id 
+        AccountShow.putAccount();
         Test.stopTest();
     }
     
+    //Negtive Put
+    @isTest static void testNegPut(){
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'PUT';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        Test.startTest();
+        AccountShow.putAccount();
+        Test.stopTest();
+    }
     
-    
-     static Account createTestData(){
+    static Account createTestData(){
         Account acc = new Account();
         acc.Name = 'John';
         acc.Phone = '9876543210';
         acc.Description = 'Only for Test';
+        acc.Email__c = 'abco@gmail.com ';
+        acc.Website ='test.com';
         insert acc;
         return acc;
+    }
+    static List<AccountShowWrapper> getAccWrap(){
+        List<AccountShowWrapper> accWrapList = new List<AccountShowWrapper>(); 
+        Account account = createTestData();
+        AccountShowWrapper accWrap = new AccountShowWrapper();
+        accWrap.Id = account.Id;
+        accWrap.Name = account.Name;
+        accWrap.Phone = account.Phone;
+        accWrap.Email = account.Email__c;
+        accWrap.Website = account.Website;
+        accWrapList.add(accWrap);
+        return accWrapList;
     }
 }
