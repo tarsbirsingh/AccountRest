@@ -1,7 +1,7 @@
 @isTest
 private class AccountShowTest {
     
-    
+    //Postive Case Of Get
     @isTest static void testGet() {
         //ARRANGE - setup request
         Account acc = createTestData();
@@ -14,6 +14,7 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest();
         AccountShow.getAccount();
         Test.stopTest();
@@ -30,11 +31,12 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest();
         AccountShow.getAccount();
         Test.stopTest();
     }
-    
+    //Postive Case Of POST
     @isTest static void testPost(){  
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
@@ -72,7 +74,7 @@ private class AccountShowTest {
         AccountShow.postAccount();
         Test.stopTest();
     }
-    
+    //Postive Case Of Delete
     @isTest static void testDelete(){ 
         //ARRANGE - setup request
         Account acc = createTestData();
@@ -85,6 +87,7 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest(); 
         AccountShow.deleteAccount();
         Test.stopTest();
@@ -101,10 +104,12 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest(); 
         AccountShow.deleteAccount();
         Test.stopTest();
     }
+    //Postive Case Of Put
     @isTest static void testPut(){
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
@@ -124,6 +129,7 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof(JsonMsg);
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest();
         AccountShow.putAccount();
         Test.stopTest();
@@ -139,11 +145,12 @@ private class AccountShowTest {
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
+        
         Test.startTest();
         AccountShow.putAccount();
         Test.stopTest();
     }
-    
+    //Create Account
     static Account createTestData(){
         Account acc = new Account();
         acc.Name = 'John';
@@ -154,18 +161,8 @@ private class AccountShowTest {
         insert acc;
         return acc;
     }
-    static List<AccountShowWrapper> getAccWrapList(){
-        List<AccountShowWrapper> accWrapList = new List<AccountShowWrapper>(); 
-        Account account = createTestData();
-        AccountShowWrapper accWrap = new AccountShowWrapper();
-        accWrap.Id = account.Id;
-        accWrap.Name = account.Name;
-        accWrap.Phone = account.Phone;
-        accWrap.Email = account.Email__c;
-        accWrap.Website = account.Website;
-        accWrapList.add(accWrap);
-        return accWrapList;
-    }
+    
+    //Get Method
     static AccountShowWrapper getAccWrap(){
         AccountShowWrapper jsonWrap = new AccountShowWrapper();
         Account accN = createTestData();
