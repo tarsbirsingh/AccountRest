@@ -1,14 +1,38 @@
 @isTest
 private class AccountShowTest {
     
-    //Postive Case Of Get
+    //Postive Test Case of Get
     @isTest static void testGet() {
+        
         //ARRANGE - setup request
         Account acc = createTestData();
-        String Name = acc.Name;
+        String AccName = acc.Name;
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/'+ Name;
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/account/'+ AccName;
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'GET';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        
+        Test.startTest();
+        AccountShow.getAccount();
+        Test.stopTest();
+        //Verify Result
+        Account accVer = [Select id,Name from Account Where Name = :AccName Limit 1];
+        System.assertEquals('John',AccName);
+
+        
+    }
+    
+    //Negtive Test Case of Get 
+    @isTest static void testNegGet() {
+        
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/account/';
         request.addHeader('Content-Type', 'application/json');
         request.httpMethod = 'GET';
         request.requestBody = Blob.valueof('{}');
@@ -20,31 +44,17 @@ private class AccountShowTest {
         Test.stopTest();
     }
     
-    //Negtive Get 
-    @isTest static void testNegGet() {
-        //ARRANGE - setup request
-        RestRequest request = new RestRequest();
-        RestResponse res = new RestResponse();
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/';
-        request.addHeader('Content-Type', 'application/json');
-        request.httpMethod = 'GET';
-        request.requestBody = Blob.valueof('{}');
-        RestContext.request = request;
-        RestContext.response= res;
-        
-        Test.startTest();
-        AccountShow.getAccount();
-        Test.stopTest();
-    }
-    //Postive Case Of POST
+    //Postive Test Case of POST
     @isTest static void testPost(){  
+        
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
         request.addHeader('Content-Type', 'application/json');
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts';
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/account';
         request.httpMethod = 'POST';
         AccountShowWrapper jsonWrap = getAccWrap(); 
+        System.debug('jsonWrap'+jsonWrap);
         String myJSON = JSON.serialize(jsonWrap);
         request.requestBody = Blob.valueof(myJSON);
         RestContext.request = request;
@@ -54,14 +64,18 @@ private class AccountShowTest {
         AccountShow.postAccount();
         Test.stopTest();
         
+        //Verify Result
+        Account accVerPost = [Select id,Name from Account Where Name = :jsonWrap.Name Limit 1];
+        System.assertEquals('Test',jsonWrap.Name);
+        System.debug('Test'+jsonWrap.Name);
         System.assert(jsonWrap!= null);
         System.assert(myJSON!= null);
-        System.debug('jsonWrap from Test Post'+jsonWrap); 
     }
-    //Negtive Post
+    
+    //Negtive Test Case of Post
     @isTest static void testNegPost(){  
-        //ARRANGE - setup request
         
+        //ARRANGE - setup request
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
         request.addHeader('Content-Type', 'application/json');
@@ -74,43 +88,53 @@ private class AccountShowTest {
         AccountShow.postAccount();
         Test.stopTest();
     }
-    //Postive Case Of Delete
+    
+    //Postive Test Case of DELETE
     @isTest static void testDelete(){ 
+        
         //ARRANGE - setup request
         Account acc = createTestData();
-        String Name = acc.Name;
+        Account accDel = [Select id,Name from Account Where id =:acc.id  Limit 1];
+        String AccName = accDel.Name;
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/'+ Name;
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/account/'+ AccName;
         request.addHeader('Content-Type', 'application/json');
         request.httpMethod = 'DELETE';
         request.requestBody = Blob.valueof('{}');
         RestContext.request = request;
         RestContext.response= res;
         
+        Test.startTest(); 
+        AccountShow.deleteAccount(); 
+        Test.stopTest();
+       
+        //Verify Result
+        List<Account> accNew = [Select id,Name from Account WHERE Name =: AccName ];
+        System.assert((accNew.Size() == 0),'AccountDeleted');
+    }
+    
+    //Negtive Test Case of DELETE
+     @isTest static void testNegDelete(){ 
+       
+         //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/account/';
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'DELETE';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+         
         Test.startTest(); 
         AccountShow.deleteAccount();
         Test.stopTest();
     }
     
-    //Negtive Test
-     @isTest static void testNegDelete(){ 
-        //ARRANGE - setup request
-        RestRequest request = new RestRequest();
-        RestResponse res = new RestResponse();
-        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/';
-        request.addHeader('Content-Type', 'application/json');
-        request.httpMethod = 'DELETE';
-        request.requestBody = Blob.valueof('{}');
-        RestContext.request = request;
-        RestContext.response= res;
-        
-        Test.startTest(); 
-        AccountShow.deleteAccount();
-        Test.stopTest();
-    }
-    //Postive Case Of Put
+    //Postive Test Case of PUT
     @isTest static void testPut(){
+        
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
@@ -123,9 +147,7 @@ private class AccountShowTest {
         accN.Email__c = jsonWrap.Email;
         accN.Phone = jsonWrap.Phone;
         accN.Website = jsonWrap.Website;
-        upsert accN;
-        System.debug('upsert acc'+accN);
-        System.debug('JsonMsg from Test Post'+JsonMsg);
+        upsert accN Email__c;
         request.requestBody = Blob.valueof(JsonMsg);
         RestContext.request = request;
         RestContext.response= res;
@@ -133,10 +155,14 @@ private class AccountShowTest {
         Test.startTest();
         AccountShow.putAccount();
         Test.stopTest();
+        //Verify Result
+        Account accVer = [Select id,Name from Account Where Name = :accN.Name Limit 1];
+        System.assertEquals('Test Co',accN.Name);
     }
     
-    //Negtive Put
+    //Negtive Test Case of Put
     @isTest static void testNegPut(){
+        
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
@@ -150,7 +176,7 @@ private class AccountShowTest {
         AccountShow.putAccount();
         Test.stopTest();
     }
-    //Create Account
+    
     static Account createTestData(){
         Account acc = new Account();
         acc.Name = 'John';
