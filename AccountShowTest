@@ -19,6 +19,22 @@ private class AccountShowTest {
         Test.stopTest();
     }
     
+    //Negtive Get 
+    @isTest static void testNegGet() {
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/';
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'GET';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        Test.startTest();
+        AccountShow.getAccount();
+        Test.stopTest();
+    }
+    
     @isTest static void testPost(){  
         //ARRANGE - setup request
         RestRequest request = new RestRequest();
@@ -26,27 +42,21 @@ private class AccountShowTest {
         request.addHeader('Content-Type', 'application/json');
         request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts';
         request.httpMethod = 'POST';
-        AccountShowWrapper jsonWrap = new AccountShowWrapper();
-        Account accN = createTestData();
-        jsonWrap.Id = accN.Id;
-        jsonWrap.Name = 'Test';
-        jsonWrap.Email = 'email@gmail.com';
-        jsonWrap.Phone = '987678978';
-        jsonWrap.Website = 'jsonWrapebsite.com';
+        AccountShowWrapper jsonWrap = getAccWrap(); 
         String myJSON = JSON.serialize(jsonWrap);
         request.requestBody = Blob.valueof(myJSON);
-        String json = request.requestBody.toString();
-        System.assert(accN!= null);
-        System.debug('insert acc'+accN);
-        System.debug('jsonWrap from Test Post'+jsonWrap); 
         RestContext.request = request;
         RestContext.response= res;
         
         Test.startTest();
         AccountShow.postAccount();
         Test.stopTest();
+        
+        System.assert(jsonWrap!= null);
+        System.assert(myJSON!= null);
+        System.debug('jsonWrap from Test Post'+jsonWrap); 
     }
-    //Negtive POst
+    //Negtive Post
     @isTest static void testNegPost(){  
         //ARRANGE - setup request
         
@@ -70,6 +80,22 @@ private class AccountShowTest {
         RestRequest request = new RestRequest();
         RestResponse res = new RestResponse();
         request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/'+ Name;
+        request.addHeader('Content-Type', 'application/json');
+        request.httpMethod = 'DELETE';
+        request.requestBody = Blob.valueof('{}');
+        RestContext.request = request;
+        RestContext.response= res;
+        Test.startTest(); 
+        AccountShow.deleteAccount();
+        Test.stopTest();
+    }
+    
+    //Negtive Test
+     @isTest static void testNegDelete(){ 
+        //ARRANGE - setup request
+        RestRequest request = new RestRequest();
+        RestResponse res = new RestResponse();
+        request.requestUri ='https://yts-dev-ed.salesforce.com/services/apexrest/accounts/';
         request.addHeader('Content-Type', 'application/json');
         request.httpMethod = 'DELETE';
         request.requestBody = Blob.valueof('{}');
@@ -128,7 +154,7 @@ private class AccountShowTest {
         insert acc;
         return acc;
     }
-    static List<AccountShowWrapper> getAccWrap(){
+    static List<AccountShowWrapper> getAccWrapList(){
         List<AccountShowWrapper> accWrapList = new List<AccountShowWrapper>(); 
         Account account = createTestData();
         AccountShowWrapper accWrap = new AccountShowWrapper();
@@ -140,4 +166,14 @@ private class AccountShowTest {
         accWrapList.add(accWrap);
         return accWrapList;
     }
+    static AccountShowWrapper getAccWrap(){
+        AccountShowWrapper jsonWrap = new AccountShowWrapper();
+        Account accN = createTestData();
+        jsonWrap.Id = accN.Id;
+        jsonWrap.Name = 'Test';
+        jsonWrap.Email = 'email@gmail.com';
+        jsonWrap.Phone = '987678978';
+        jsonWrap.Website = 'jsonWrapebsite.com';
+        return jsonWrap;
+    } 
 }
