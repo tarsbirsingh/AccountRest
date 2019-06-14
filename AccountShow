@@ -1,37 +1,51 @@
-@RestResource (UrlMapping = '/accounts/*')
+@RestResource (UrlMapping = '/account/*')
 global with Sharing class AccountShow {
-    
+     
    @HttpGet
     global static void getAccount(){
         RestRequest request = RestContext.request;
+        Map<String,String> reqParams = request.params;
+        String customerPriority ;
+        Boolean containPriority;
         RestResponse res = RestContext.response;
-        String AccName = request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
+        res.addHeader('Content-Type', 'application/json');
         Account accRec;
         List<AccountShowWrapper> accWrapList;
         try {
-            accRec = [SELECT Id, Name,Phone,Website,Email__c FROM Account Where Name =:AccName Limit 1];
+            customerPriority = reqParams.get('CustomerPriority');  
+            containPriority = reqParams.containsKey('CustomerPriority');
+            System.assertEquals(true, containPriority,'Expected Parameter : CustomerPriority');
+            String AccName = request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
+            accRec = [SELECT Id,Name,Phone,Website,Email__c,CustomerPriority__c FROM Account Where Name =:AccName AND  CustomerPriority__c=:customerPriority Limit 1];
+            System.assert(accRec!= null);
             accWrapList = new List<AccountShowWrapper>();
             AccountShowWrapper accWrap = new AccountShowWrapper();
-            accWrap.Id = accRec.Id;
+            accWrap.Id = accRec.Id; 
             accWrap.Name = accRec.Name;
             accWrap.Phone = accRec.Phone;
+            accWrap.CustomerPriority = accRec.CustomerPriority__c;
             accWrap.Email = accRec.Email__c;
             accWrap.Website = accRec.Website;
             accWrapList.add(accWrap);
-            res.responseBody = Blob.valueOf('{"Success":"Succesfully Fetch  Account Record"}'+'\n\n'+JSON.serialize(accRec)+'\n\n'+accWrapList);
+            //System.debug('accRec'+accRec);
+            //System.debug('accWrapList'+accWrapList);
+            res.responseBody = Blob.valueOf(JSON.serialize(accWrapList));
             res.statusCode = 200;
-        } catch (Exception e) {
+        }catch(System.QueryException e){
             res.responseBody = Blob.valueOf(e.getMessage());
             res.statusCode = 404;
-        }
+        } 
+        
     }
 
     @HttpPost
     global static void postAccount(){
         RestRequest req = RestContext.request;
         RestResponse res = RestContext.response;
-        string jsonbody =   req.requestBody.toString();
-        System.debug('Json :'+jsonbody);
+        res.addHeader('Content-Type', 'application/json');
+        string jsonbody = req.requestBody.toString();
+        System.assert(jsonbody!= null);
+        //System.debug('Json :'+jsonbody);
         AccountShowWrapper jsonwrap;
        
         try{
@@ -40,32 +54,39 @@ global with Sharing class AccountShow {
                 Account acc = new Account();
                 acc.Name = jsonWrap.Name;
                 acc.Email__c = jsonWrap.Email;
+                acc.CustomerPriority__c = jsonWrap.CustomerPriority;
                 acc.Phone = jsonWrap.Phone;
                 acc.Website = jsonWrap.Website;
                 insert acc;
-                System.debug('Deserialize :'+jsonwrap);
-                res.responseBody = Blob.valueOf('{"Success":"Succesfully Created Account"}'+'\n\n'+JSON.serialize(acc));
+                System.assert(acc!= null);
+                //System.debug('insert acc'+acc);
+                //System.debug('Deserialize :'+jsonwrap);
+                res.responseBody = Blob.valueOf(JSON.serialize(acc));
                 res.statusCode = 200;
             }
-        }catch(Exception e){
+        }catch (System.DmlException e) {
             res.responseBody = Blob.valueOf(e.getMessage());
             res.statusCode = 400;
-        }
+    }
+       
     } 
     @HttpDelete
     global static void deleteAccount(){
         RestRequest request = RestContext.request;
         RestResponse res = RestContext.response;
-        String accId= request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
+        res.addHeader('Content-Type', 'application/json');
+        String Name= request.requestURI.subString(request.requestURI.lastIndexOf('/')+1);
         Account accRec;
         try{
-            accRec =[Select id,Name from Account Where Id =:accId Limit 1];
+            accRec =[Select id,Name from Account Where Name =:Name Limit 1];
+            System.debug('Before delete accRec Del'+accRec);
             delete accRec;
-            res.responseBody = Blob.valueOf('{"Success":"Succesfully Deleted Record of Account"}'+'\n\n'+JSON.serialize(accRec));
+            res.responseBody = Blob.valueOf(JSON.serialize(accRec));
             res.statusCode = 200;
         } catch (Exception e){
-            res.responseBody = Blob.valueOf('{"error":"Not correct Record Id of Account"}');
+            res.responseBody = Blob.valueOf('{"error":"Not correct Name of Account"}');
             res.statusCode = 400;
+            System.debug('After accRec Del'+accRec);
         }
         
     }
@@ -73,22 +94,25 @@ global with Sharing class AccountShow {
     global static void putAccount(){
         RestRequest req = RestContext.request;
         RestResponse res = RestContext.response;
+        res.addHeader('Content-Type', 'application/json');
         string jsonbody =   req.requestBody.toString();
-        System.debug('Json :'+jsonbody);
+        //System.debug('Json :'+jsonbody);
         AccountShowWrapper jsonwrap;
         Account acc;
          try{
             if(RestContext.request.requestBody!= null){
                 jsonwrap =(AccountShowWrapper)JSON.deserialize(jsonbody,AccountShowWrapper.class);
-                acc = [Select id,Name,Phone,Website,Email__c from Account Limit 1];
+                acc = [Select id,Name,Phone,Website,Email__c,CustomerPriority__c from Account Limit 1];
                 acc.Email__c = jsonwrap.Email;
                 acc.Id = jsonWrap.Id;
                 acc.Name = jsonWrap.Name;
+                acc.CustomerPriority__c = jsonWrap.CustomerPriority;
                 acc.Phone = jsonWrap.Phone;
                 acc.Website = jsonWrap.Website;
-                upsert acc;
-                System.debug('Deserialize :'+jsonwrap);
-                res.responseBody = Blob.valueOf('{"Success":"Succesfully Created Account"}'+'\n\n'+JSON.serialize(acc));
+                upsert acc Email__c;
+                //System.debug('Upsert acc'+acc);
+                //System.debug('Deserialize :'+jsonwrap);
+                res.responseBody = Blob.valueOf(JSON.serialize(acc));
                 res.statusCode = 200;
             }
         } catch (Exception e){
