@@ -17,11 +17,27 @@ public class AccountCallout {
                 acc.Phone = (String)mpAccObj.get('Phone');
                 acc.Website = (String)mpAccObj.get('Website');
                 acc.CustomerPriority__c = (String)mpAccObj.get('CustomerPriority');
-     
+                accList.add(acc);
+                System.debug('accList'+accList);
             }
+            insert accList;
         }
     }
     public static void postCallout(){
+        Http http = new Http();
+        HttpRequest request = new HttpRequest();
+        request.setEndpoint('callout:My_Named_Credential/services/apexrest/account');
+        request.setMethod('POST');
+        request.setHeader('Content-Type', 'application/json');
+        request.setBody('{"Name":"Tommy","Phone" :"9876549876","Website": "yts.com","Email":"tommy@gmail.com","CustomerPriority":"Low"}');
+        HttpResponse response = http.send(request);
+        if (response.getStatusCode() == 200) {
+             System.debug(response.getBody());
+            
+        } else {
+           System.debug('The status code returned was not expected: ' +
+                         response.getStatusCode() + ' ' + response.getStatus());
+        }
         
     }
 }
