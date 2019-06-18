@@ -1,0 +1,27 @@
+public class AccountCallout {
+    public static void getCallout(){
+        HttpRequest httpRequest = new HttpRequest();
+        httpRequest.setEndpoint('callout:My_Named_Credential/services/apexrest/account/AGC');
+        httpRequest.setMethod('GET');
+        Http http = new Http();
+        HTTPResponse httpResponse = http.send(httpRequest);
+        if (httpResponse.getStatusCode() == 200 ) {  
+            List<Object> accountObj = (List<Object>) JSON.deserializeUntyped(httpResponse.getBody()); 
+            System.debug('Account Record in List'+accountObj);
+            List<Account> accList = new List<Account>();
+            for(Object accObj: accountObj){
+                Account acc = new Account();
+                Map<String,Object> mpAccObj = (Map<string,Object>)accObj;
+                System.debug('mpAccObj : '+mpAccObj);
+                acc.Name = (String)mpAccObj.get('Name');
+                acc.Phone = (String)mpAccObj.get('Phone');
+                acc.Website = (String)mpAccObj.get('Website');
+                acc.CustomerPriority__c = (String)mpAccObj.get('CustomerPriority');
+     
+            }
+        }
+    }
+    public static void postCallout(){
+        
+    }
+}
